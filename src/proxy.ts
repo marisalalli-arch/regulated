@@ -11,5 +11,6 @@ export const config = {
     "/goals/:path*",
     "/habits/:path*",
     "/journal/:path*",
+    "/profile/:path*",
   ],
 }

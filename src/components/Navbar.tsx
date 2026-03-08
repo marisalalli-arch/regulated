@@ -45,9 +45,9 @@ export default function Navbar() {
         <div className="flex items-center gap-6">
           {session ? (
             <>
-              <span className="text-xs tracking-wide text-stone-400 hidden sm:block">
+              <Link href="/profile" className="text-xs tracking-wide text-stone-400 hover:text-stone-700 transition-colors hidden sm:block">
                 {session.user?.name || session.user?.email}
-              </span>
+              </Link>
               <button
                 onClick={() => signOut({ callbackUrl: "/login" })}
                 className="text-xs tracking-[0.1em] uppercase text-stone-400 hover:text-stone-700 transition-colors"

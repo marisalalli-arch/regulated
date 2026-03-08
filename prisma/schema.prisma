@@ -39,12 +39,15 @@ model User {
   emailVerified  DateTime?
   image          String?
   password       String?
+  birthdate      String?
+  risingSign     String?
   accounts       Account[]
   sessions       Session[]
   goals          Goal[]
   habits         Habit[]
   journalEntries JournalEntry[]
   chatMessages   ChatMessage[]
+  horoscopes     DailyHoroscope[]
   createdAt      DateTime       @default(now())
 }
 
@@ -115,10 +118,16 @@ model ChatMessage {
 
 model DailyHoroscope {
   id        String   @id @default(cuid())
-  date      String   @unique
+  date      String
+  userId    String
+  sunSign   String
+  rising    String?
   reading   String
   focusWord String
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([date, userId])
 }
 
 model DailyWorkout {

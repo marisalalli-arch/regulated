@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Geist } from "next/font/google"
 import { Cormorant_Garamond } from "next/font/google"
 import "./globals.css"
@@ -15,7 +15,20 @@ const cormorant = Cormorant_Garamond({
 
 export const metadata: Metadata = {
   title: "Regulated",
-  description: "Your personal growth platform",
+  description: "A personal growth platform for the woman who has everything — and still wants more.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Regulated",
+  },
+}
+
+export const viewport: Viewport = {
+  themeColor: "#1c1917",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
