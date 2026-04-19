@@ -98,6 +98,22 @@ export function BloomIcon({ size = 24, className = "" }: IconProps) {
   )
 }
 
+// Leaf — nourishment / food log
+export function LeafIcon({ size = 24, className = "" }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+      <path
+        d="M12 3C7 3 3 7 3 12c0 3 1.5 5.5 4 7l5-5 5 5c2.5-1.5 4-4 4-7 0-5-4-9-9-9z"
+        stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"
+        fill="currentColor" fillOpacity="0.12"
+      />
+      <path d="M12 3v16" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeOpacity="0.5" />
+      <path d="M8.5 8.5C10 10 12 10.5 12 10.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeOpacity="0.4" />
+      <path d="M15.5 8.5C14 10 12 10.5 12 10.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeOpacity="0.4" />
+    </svg>
+  )
+}
+
 // Feather — journal / reflection
 export function FeatherIcon({ size = 24, className = "" }: IconProps) {
   return (
