@@ -10,6 +10,7 @@ const links = [
   { href: "/goals", label: "Goals" },
   { href: "/habits", label: "Habits" },
   { href: "/journal", label: "Journal" },
+  { href: "/foodlog", label: "Nourish" },
 ]
 
 export default function Navbar() {

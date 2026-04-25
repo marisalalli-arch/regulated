@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 import HoroscopeCard from "@/components/HoroscopeCard"
 import WorkoutCard from "@/components/WorkoutCard"
 import TarotCard from "@/components/TarotCard"
-import { EyeIcon, SparkleIcon, BloomIcon, FeatherIcon } from "@/components/Icons"
+import { EyeIcon, SparkleIcon, BloomIcon, FeatherIcon, LeafIcon } from "@/components/Icons"
 
 export default async function Dashboard() {
   const session = await auth()
@@ -37,12 +37,13 @@ export default async function Dashboard() {
         </div>
 
         <div className="mt-24 w-full max-w-3xl border-t border-[#e2dbd3] pt-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-left">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 text-left">
             {[
               { label: "AI Coach", desc: "Personalized coaching conversations", icon: <EyeIcon size={28} className="text-[#3e7a68] mb-3" /> },
               { label: "Goals", desc: "Clarity on what matters most", icon: <SparkleIcon size={28} className="text-[#b0883a] mb-3" /> },
               { label: "Habits", desc: "Daily rituals that hold", icon: <BloomIcon size={28} className="text-[#8a6a78] mb-3" /> },
               { label: "Journal", desc: "Guided reflection and inner work", icon: <FeatherIcon size={28} className="text-[#6a5a8a] mb-3" /> },
+              { label: "Nourish", desc: "Track daily food and nourishment", icon: <LeafIcon size={28} className="text-[#5a7a5a] mb-3" /> },
             ].map((f) => (
               <div key={f.label}>
                 {f.icon}
@@ -57,18 +58,22 @@ export default async function Dashboard() {
   }
 
   const userId = session.user.id
-  const [goals, habits, journalEntries] = await Promise.all([
+  const today = new Date().toISOString().split("T")[0]
+
+  const [goals, habits, journalEntries, foodEntries] = await Promise.all([
     prisma.goal.findMany({ where: { userId, status: "active" }, take: 3, orderBy: { createdAt: "desc" } }),
     prisma.habit.findMany({
       where: { userId },
       take: 5,
       orderBy: { streak: "desc" },
-      include: { logs: { where: { date: new Date().toISOString().split("T")[0] } } },
+      include: { logs: { where: { date: today } } },
     }),
     prisma.journalEntry.findMany({ where: { userId }, take: 3, orderBy: { createdAt: "desc" } }),
+    prisma.foodEntry.findMany({ where: { userId, date: today }, orderBy: { createdAt: "asc" } }),
   ])
 
   const completedHabitsToday = habits.filter((h) => h.logs.length > 0).length
+  const totalCaloriesToday = foodEntries.reduce((sum, e) => sum + (e.calories ?? 0), 0)
 
   return (
     <div className="space-y-12">
@@ -88,10 +93,11 @@ export default async function Dashboard() {
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-3 gap-0 border border-[#e2dbd3] divide-x divide-[#e2dbd3]">
+      <div className="grid grid-cols-4 gap-0 border border-[#e2dbd3] divide-x divide-[#e2dbd3]">
         <StatCell label="Active Goals" value={goals.length} />
         <StatCell label="Habits Today" value={`${completedHabitsToday} of ${habits.length}`} />
         <StatCell label="Journal Entries" value={journalEntries.length} />
+        <StatCell label="Meals Today" value={foodEntries.length} />
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
@@ -167,6 +173,33 @@ export default async function Dashboard() {
           </div>
         )}
       </SectionCard>
+
+      {/* Food Log */}
+      <SectionCard title="Nourishment" href="/foodlog" linkLabel="Log food">
+        {foodEntries.length === 0 ? (
+          <EmptyState message="Nothing logged today. Track your nourishment." />
+        ) : (
+          <div className="space-y-3">
+            {foodEntries.slice(0, 5).map((e) => (
+              <div key={e.id} className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="text-xs text-stone-400 capitalize shrink-0">{e.mealType}</span>
+                  <span className="text-sm text-stone-700 truncate">{e.name}</span>
+                </div>
+                {e.calories !== null && (
+                  <span className="text-xs text-stone-400 shrink-0">{e.calories} cal</span>
+                )}
+              </div>
+            ))}
+            {totalCaloriesToday > 0 && (
+              <div className="border-t border-[#e2dbd3] pt-3 flex justify-between">
+                <span className="text-xs tracking-wide uppercase text-stone-400">Total</span>
+                <span className="text-xs text-stone-500">{totalCaloriesToday} cal</span>
+              </div>
+            )}
+          </div>
+        )}
+      </SectionCard>
     </div>
   )
 }
@@ -195,6 +228,7 @@ const SECTION_ICONS: Record<string, React.ReactNode> = {
   "Goals": <SparkleIcon size={16} className="text-[#b0883a]" />,
   "Today's Rituals": <BloomIcon size={16} className="text-[#8a6a78]" />,
   "Journal": <FeatherIcon size={16} className="text-[#6a5a8a]" />,
+  "Nourishment": <LeafIcon size={16} className="text-[#5a7a5a]" />,
 }
 
 function SectionCard({ title, href, linkLabel, children }: {
