@@ -48,6 +48,13 @@ model User {
   journalEntries JournalEntry[]
   chatMessages   ChatMessage[]
   horoscopes     DailyHoroscope[]
+  trainingPlan   TrainingPlan?
+  workoutSessions WorkoutSession[]
+  weeklyCheckIns WeeklyCheckIn[]
+  foodLogs       FoodLog[]
+  dailyTrackings DailyTracking[]
+  supplements    Supplement[]
+  supplementLogs SupplementLog[]
   createdAt      DateTime       @default(now())
 }
 
@@ -152,4 +159,126 @@ model DailyTarot {
   description String
   advice      String
   createdAt   DateTime @default(now())
+}
+
+// ---------- 12-week training plan ----------
+
+// One per user. Records when the user started the plan so we can compute
+// which week / phase they're in today.
+model TrainingPlan {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  startDate String   // YYYY-MM-DD, the Monday they began week 1
+  planSlug  String   @default("12wk-fat-loss-muscle") // future-proof for other plans
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// One per logged training session (lift A/B/C, walk, row, etc.).
+model WorkoutSession {
+  id           String        @id @default(cuid())
+  userId       String
+  date         String        // YYYY-MM-DD
+  weekNumber   Int           // 1-12
+  phase        String        // "Foundation" | "Build" | "Push" | "Peak"
+  workoutKey   String        // "A" | "B" | "C" | "walk" | "row" | "intervals" | "peloton"
+  workoutName  String        // human-readable, e.g. "Workout A — Squat-Focused"
+  durationMin  Int?          // for cardio mostly
+  striveScore  Float?        // optional Peloton strive score (or any HR-zone metric)
+  notes        String?
+  createdAt    DateTime      @default(now())
+  exerciseLogs ExerciseLog[]
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
+}
+
+// One per exercise per session. Each set's weight + reps stored as parallel arrays
+// (Postgres handles arrays natively via Prisma).
+model ExerciseLog {
+  id           String         @id @default(cuid())
+  sessionId    String
+  exerciseKey  String         // stable id, e.g. "goblet_squat"
+  exerciseName String         // human-readable
+  orderIndex   Int            // display order within the workout
+  setWeights   Float[]        // e.g. [15, 15, 17.5, 17.5]
+  setReps      Int[]          // e.g. [12, 12, 10, 10]
+  notes        String?
+  session      WorkoutSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+// One row per user per day. Holds simple daily counters like water intake.
+model DailyTracking {
+  id        String   @id @default(cuid())
+  userId    String
+  date      String   // YYYY-MM-DD
+  waterOz   Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+}
+
+// User's master list of supplements (one row per supplement they take regularly).
+model Supplement {
+  id        String          @id @default(cuid())
+  userId    String
+  name      String
+  active    Boolean         @default(true)
+  createdAt DateTime        @default(now())
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  logs      SupplementLog[]
+}
+
+// One row per supplement per day -- records that the user took it.
+model SupplementLog {
+  id           String     @id @default(cuid())
+  userId       String
+  supplementId String
+  date         String     // YYYY-MM-DD
+  takenAt      DateTime   @default(now())
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  supplement   Supplement @relation(fields: [supplementId], references: [id], onDelete: Cascade)
+
+  @@unique([supplementId, date])
+  @@index([userId, date])
+}
+
+// Daily food log entry. One row per food item; daily totals computed at read time.
+model FoodLog {
+  id        String   @id @default(cuid())
+  userId    String
+  date      String   // YYYY-MM-DD
+  mealType  String   // "breakfast" | "lunch" | "snack" | "dinner"
+  name      String
+  calories  Float?
+  proteinG  Float?
+  carbsG    Float?
+  fatG      Float?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
+}
+
+// Weekly weigh-in + measurements + how she's feeling.
+model WeeklyCheckIn {
+  id         String   @id @default(cuid())
+  userId     String
+  date       String   // YYYY-MM-DD
+  weekNumber Int      // which plan week this check-in is for
+  weightLbs  Float?
+  waistIn    Float?
+  hipsIn     Float?
+  energy     Int?     // 1-10
+  sleepHrs   Float?
+  notes      String?
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, weekNumber])
+  @@index([userId, date])
 }

@@ -7,6 +7,8 @@ import { signOut, useSession } from "next-auth/react"
 const links = [
   { href: "/", label: "Home" },
   { href: "/coach", label: "Coach" },
+  { href: "/plan", label: "Plan" },
+  { href: "/food", label: "Food" },
   { href: "/goals", label: "Goals" },
   { href: "/habits", label: "Habits" },
   { href: "/journal", label: "Journal" },
@@ -27,19 +29,23 @@ export default function Navbar() {
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`text-xs tracking-[0.12em] uppercase transition-colors ${
-                pathname === link.href
-                  ? "text-stone-900"
-                  : "text-stone-400 hover:text-stone-700"
-              }`}
-            >
-              {link.label}
-            </Link>
-          ))}
+          {links.map((link) => {
+            const active =
+              link.href === "/"
+                ? pathname === "/"
+                : pathname === link.href || pathname.startsWith(link.href + "/")
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`text-xs tracking-[0.12em] uppercase transition-colors ${
+                  active ? "text-stone-900" : "text-stone-400 hover:text-stone-700"
+                }`}
+              >
+                {link.label}
+              </Link>
+            )
+          })}
         </div>
 
         <div className="flex items-center gap-6">
@@ -73,17 +79,23 @@ export default function Navbar() {
 
       {/* Mobile nav */}
       <div className="md:hidden border-t border-[#e2dbd3] px-6 py-3 flex gap-6 overflow-x-auto">
-        {links.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className={`text-xs tracking-[0.1em] uppercase whitespace-nowrap transition-colors ${
-              pathname === link.href ? "text-stone-900" : "text-stone-400"
-            }`}
-          >
-            {link.label}
-          </Link>
-        ))}
+        {links.map((link) => {
+          const active =
+            link.href === "/"
+              ? pathname === "/"
+              : pathname === link.href || pathname.startsWith(link.href + "/")
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`text-xs tracking-[0.1em] uppercase whitespace-nowrap transition-colors ${
+                active ? "text-stone-900" : "text-stone-400"
+              }`}
+            >
+              {link.label}
+            </Link>
+          )
+        })}
       </div>
     </nav>
   )

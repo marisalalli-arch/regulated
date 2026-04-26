@@ -3,7 +3,8 @@ import { auth } from "@/auth"
 import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 import HoroscopeCard from "@/components/HoroscopeCard"
-import WorkoutCard from "@/components/WorkoutCard"
+import TodaysPlanCard from "@/components/TodaysPlanCard"
+import TodaysFoodCard from "@/components/TodaysFoodCard"
 import TarotCard from "@/components/TarotCard"
 import { EyeIcon, SparkleIcon, BloomIcon, FeatherIcon } from "@/components/Icons"
 
@@ -80,10 +81,11 @@ export default async function Dashboard() {
         </h1>
       </div>
 
-      {/* Daily cards */}
-      <div className="grid md:grid-cols-3 gap-6">
+      {/* Daily cards (2x2 layout) */}
+      <div className="grid md:grid-cols-2 gap-6">
         <HoroscopeCard />
-        <WorkoutCard />
+        <TodaysPlanCard />
+        <TodaysFoodCard />
         <TarotCard />
       </div>
 
